@@ -26,6 +26,7 @@ namespace TwitchLib.Extension
 
         public ExtensionBase(ExtensionConfiguration config)
         {
+            _config = config;
             Secrets = new List<Secret> { new Secret(config.StartingSecret, DateTime.Now, DateTime.Now.AddYears(100)) };
             _jsonSerializer = new TwitchLibJsonSerializer();
         }
