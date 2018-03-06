@@ -4,7 +4,6 @@ using Microsoft.Extensions.Options;
 using TwitchLib.Extension.Core.Authentication.Events;
 using System.Text.Encodings.Web;
 using System.Threading.Tasks;
-using System;
 
 namespace TwitchLib.Extension.Core.Authentication
 {

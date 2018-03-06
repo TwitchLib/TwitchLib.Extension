@@ -1,0 +1,10 @@
+﻿################################################################################
+# This .gitignore file was automatically created by Microsoft(R) Visual Studio.
+################################################################################
+
+/.vs/TwitchLib.Extension/v15
+/TwitchLib.Extension.Core/obj
+/TwitchLib.Extension.Core/bin/Debug/netcoreapp2.0
+/TwitchLib.Extension/obj
+/TwitchLib.Extension/bin/Debug
+/TwitchLib.Extension/.vs/TwitchLib.Extension/v15

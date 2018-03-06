@@ -2,29 +2,28 @@
   <PropertyGroup>
     <TargetFrameworks>netstandard2.0;net452</TargetFrameworks>
     <PackageId>TwitchLib.Extension</PackageId>
-    <Version>2.0</Version>
-    <Description></Description>
+    <Version>1.0.0</Version>
+    <Description>Extension component of TwitchLib. This component allows you to access Twitch's Extension Api system</Description>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
     <Authors>luckyNoS7evin</Authors>
     <Company>swiftyspiffy (cole)</Company>
+    <PackageIconUrl>https://colejelinek.com/dev/twitchlib.png</PackageIconUrl>
+    <PackageProjectUrl>https://github.com/TwitchLib/TwitchLib.PubSub</PackageProjectUrl>
+    <PackageLicenseUrl>https://opensource.org/licenses/MIT</PackageLicenseUrl>
     <Copyright>Copyright 2017</Copyright>
-    <PackageReleaseNotes></PackageReleaseNotes>
-    <RepositoryUrl>https://github.com/swiftyspiffy/TwitchLib</RepositoryUrl>
+    <PackageReleaseNotes>Version 1 of the Extension library</PackageReleaseNotes>
+    <RepositoryUrl>https://github.com/TwitchLib/TwitchLib.Extension</RepositoryUrl>
     <RepositoryType>Git</RepositoryType>
-    <PackageTags></PackageTags>
+    <PackageTags>twitch extension api c# csharp nbet standard 2.0</PackageTags>
     <NeutralLanguage>en-US</NeutralLanguage>
+    <AssemblyVersion>2.0.0.0</AssemblyVersion>
+    <FileVersion>2.0.0.0</FileVersion>
   </PropertyGroup>
   <ItemGroup>
-    <PackageReference Include="Microsoft.IdentityModel.Tokens" Version="5.1.5" />
-    <PackageReference Include="Newtonsoft.Json" Version="10.0.3" />
-    <PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="5.1.5" />
+    <PackageReference Include="Microsoft.IdentityModel.Tokens" Version="5.2.1" />
+    <PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="5.2.1" />
+    <PackageReference Include="Newtonsoft.Json" Version="11.0.1" />
   </ItemGroup>
-  <PropertyGroup Label="Globals">
-    <SccProjectName>SAK</SccProjectName>
-    <SccProvider>SAK</SccProvider>
-    <SccAuxPath>SAK</SccAuxPath>
-    <SccLocalPath>SAK</SccLocalPath>
-  </PropertyGroup>
   <PropertyGroup Condition=" '$(TargetFramework)' == 'net452'">
     <DefineConstants>NET452</DefineConstants>
   </PropertyGroup>

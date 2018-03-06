@@ -1,27 +1,29 @@
 <Project Sdk="Microsoft.NET.Sdk">
-
-  <PropertyGroup Label="Globals">
-    <SccProjectName>SAK</SccProjectName>
-    <SccProvider>SAK</SccProvider>
-    <SccAuxPath>SAK</SccAuxPath>
-    <SccLocalPath>SAK</SccLocalPath>
-  </PropertyGroup>
-
   <PropertyGroup>
     <TargetFramework>netcoreapp2.0</TargetFramework>
+    <PackageId>TwitchLib.Extension.Core</PackageId>
+    <Version>1.0.0</Version>
+    <Description>Extension component of TwitchLib. This component expands the base Extension Library to include a dot net standard (core) Authentication Middleware and Extension Manager</Description>
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+    <Authors>luckyNoS7evin</Authors>
+    <Company>swiftyspiffy (cole)</Company>
+    <PackageIconUrl>https://colejelinek.com/dev/twitchlib.png</PackageIconUrl>
+    <PackageProjectUrl>https://github.com/TwitchLib/TwitchLib.PubSub</PackageProjectUrl>
+    <PackageLicenseUrl>https://opensource.org/licenses/MIT</PackageLicenseUrl>
+    <Copyright>Copyright 2017</Copyright>
+    <PackageReleaseNotes>Version 1 of the Extension library</PackageReleaseNotes>
+    <RepositoryUrl>https://github.com/TwitchLib/TwitchLib.Extension</RepositoryUrl>
+    <RepositoryType>Git</RepositoryType>
+    <PackageTags>twitch extension api c# csharp nbet standard 2.0 authorization extension mamnager</PackageTags>
+    <NeutralLanguage>en-US</NeutralLanguage>
+    <AssemblyVersion>2.0.0.0</AssemblyVersion>
+    <FileVersion>2.0.0.0</FileVersion>
   </PropertyGroup>
-
   <ItemGroup>
     <PackageReference Include="Microsoft.AspNetCore.Authentication" Version="2.0.1" />
     <PackageReference Include="Microsoft.IdentityModel.Tokens" Version="5.1.5" />
   </ItemGroup>
-
   <ItemGroup>
     <ProjectReference Include="..\TwitchLib.Extension\TwitchLib.Extension.csproj" />
   </ItemGroup>
-
-  <ItemGroup>
-    <Folder Include="Authentication\" />
-  </ItemGroup>
-
 </Project>

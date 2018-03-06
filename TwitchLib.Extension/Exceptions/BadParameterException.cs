@@ -1,8 +1,7 @@
-﻿namespace TwitchLib.Extension.Exceptions
+﻿using System;
+
+namespace TwitchLib.Extension.Exceptions
 {
-    #region using directives
-    using System;
-    #endregion
     /// <summary>Exception representing an invalid resource</summary>
     public class BadParameterException : Exception
     {
