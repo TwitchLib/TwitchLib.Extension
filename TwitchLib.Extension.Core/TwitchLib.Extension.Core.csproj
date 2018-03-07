@@ -8,7 +8,7 @@
     <Authors>luckyNoS7evin</Authors>
     <Company>swiftyspiffy (cole)</Company>
     <PackageIconUrl>https://colejelinek.com/dev/twitchlib.png</PackageIconUrl>
-    <PackageProjectUrl>https://github.com/TwitchLib/TwitchLib.PubSub</PackageProjectUrl>
+    <PackageProjectUrl>https://github.com/TwitchLib/TwitchLib.Extension</PackageProjectUrl>
     <PackageLicenseUrl>https://opensource.org/licenses/MIT</PackageLicenseUrl>
     <Copyright>Copyright 2017</Copyright>
     <PackageReleaseNotes>Version 1 of the Extension library</PackageReleaseNotes>
@@ -21,7 +21,7 @@
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="Microsoft.AspNetCore.Authentication" Version="2.0.1" />
-    <PackageReference Include="Microsoft.IdentityModel.Tokens" Version="5.1.5" />
+    <PackageReference Include="Microsoft.IdentityModel.Tokens" Version="5.2.1" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\TwitchLib.Extension\TwitchLib.Extension.csproj" />

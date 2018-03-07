@@ -8,3 +8,5 @@
 /TwitchLib.Extension/obj
 /TwitchLib.Extension/bin/Debug
 /TwitchLib.Extension/.vs/TwitchLib.Extension/v15
+/TwitchLib.Extension/bin/Release
+/TwitchLib.Extension.Core/bin
