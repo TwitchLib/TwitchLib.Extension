@@ -335,7 +335,7 @@ namespace TwitchLib.Extension
         {
             var validationParameters = new TokenValidationParameters
             {
-                IssuerSigningKey = new SymmetricSecurityKey(Convert.FromBase64String(CurrentSecret)),
+                IssuerSigningKey = new SymmetricSecurityKey(Convert.FromBase64String(secret)),
                 ValidateAudience = false,
                 ValidateLifetime = false,
                 ValidateIssuer = false,
