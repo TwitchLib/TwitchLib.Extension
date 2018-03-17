@@ -2,7 +2,7 @@
   <PropertyGroup>
     <TargetFrameworks>netstandard2.0;net452</TargetFrameworks>
     <PackageId>TwitchLib.Extension</PackageId>
-    <Version>1.0.0</Version>
+    <Version>1.1.0</Version>
     <Description>Extension component of TwitchLib. This component allows you to access Twitch's Extension Api system</Description>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
     <Authors>luckyNoS7evin</Authors>
@@ -16,8 +16,8 @@
     <RepositoryType>Git</RepositoryType>
     <PackageTags>twitch extension api c# csharp nbet standard 2.0</PackageTags>
     <NeutralLanguage>en-US</NeutralLanguage>
-    <AssemblyVersion>2.0.0.0</AssemblyVersion>
-    <FileVersion>2.0.0.0</FileVersion>
+    <AssemblyVersion>2.1.0.0</AssemblyVersion>
+    <FileVersion>2.1.0.0</FileVersion>
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="Microsoft.IdentityModel.Tokens" Version="5.2.1" />
