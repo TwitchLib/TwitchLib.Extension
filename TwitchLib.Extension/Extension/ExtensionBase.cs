@@ -11,6 +11,9 @@ using System.Security.Claims;
 using TwitchLib.Extension.Exceptions;
 using System.Linq;
 using TwitchLib.Extension.Models;
+using JWT;
+using JWT.Serializers;
+using JWT.Algorithms;
 
 namespace TwitchLib.Extension
 {
@@ -244,7 +247,7 @@ namespace TwitchLib.Extension
         {
             var request = WebRequest.CreateHttp(string.Format(_extensionUrl, url));
 
-            request.Headers["Client-ID"] = clientId;
+            request.Headers["Client-Id"] = clientId;
             request.Method = method;
             request.ContentType = "application/json";
             var token = jwt ?? Sign(secret, userId, 10);
@@ -263,7 +266,35 @@ namespace TwitchLib.Extension
                     return new KeyValuePair<int, string>((int)response.StatusCode, data);
                 }
             }
-            catch (WebException ex) { HandleWebException(ex); }
+            catch (WebException ex) {
+                //var yep = "";
+                //try
+                //{
+                //     IJsonSerializer serializer = new JsonNetSerializer();
+                //    IDateTimeProvider provider = new UtcDateTimeProvider();
+                //    IJwtValidator validator = new JwtValidator(serializer, provider);
+                //     IBase64UrlEncoder urlEncoder = new JwtBase64UrlEncoder();
+                //    IJwtDecoder decoder = new JwtDecoder(serializer, validator, urlEncoder);
+                //    var json = decoder.Decode(token, secret, verify: true);
+                //    yep = json;
+                //}
+                //catch (TokenExpiredException)
+                //{
+                //    yep="Token has expired";
+                //}
+                //catch (SignatureVerificationException)
+                //{
+                //    yep = "Token has invalid signature";
+                //}
+                //var result = "";
+                //foreach(var key in ex.Response.Headers.AllKeys)
+                //{
+                //    result += $"{key} : {ex.Response.Headers[key]}\r\n";
+                //}
+
+                HandleWebException(ex);
+
+            }
 
             return new KeyValuePair<int, string>(0, null);
         }
@@ -357,42 +388,40 @@ namespace TwitchLib.Extension
 
         private string Sign(string secret, string userId, int expirySeconds)
         {
+            var payload = new Dictionary<string, object>
+                {
+                    { "exp", (GetEpoch() + expirySeconds) },
+                    { "user_id", userId },
+                    { "role", "external" }
+                };
 
-            var tokenDescriptor = new SecurityTokenDescriptor
-            {
-                Subject = new ClaimsIdentity(new Claim[]
-                       {
-                            new Claim("exp", (GetEpoch() + expirySeconds).ToString()),
-                            new Claim("user_id", userId),
-                            new Claim("role","external")
-                       }),
-                SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(Convert.FromBase64String(secret)), SecurityAlgorithms.HmacSha256Signature)
-            };
-            JwtSecurityTokenHandler handler = new JwtSecurityTokenHandler();
-            var plainToken = handler.CreateToken(tokenDescriptor);
+            IJwtAlgorithm algorithm = new HMACSHA256Algorithm();
+            IJsonSerializer serializer = new JsonNetSerializer();
+            IBase64UrlEncoder urlEncoder = new JwtBase64UrlEncoder();
+            IJwtEncoder encoder = new JwtEncoder(algorithm, serializer, urlEncoder);
 
-            return handler.WriteToken(plainToken);
+            var token = encoder.Encode(payload, secret);
+            return token;
         }
 
         private string Sign(string secret, string userId, int expirySeconds, string channelId)
         {
+            var payload = new Dictionary<string, object>
+                {
+                    { "exp", (GetEpoch() + expirySeconds) },
+                    { "user_id", userId },
+                    { "role", "external" },
+                    { "channel_id", channelId },
+                    { "pubsub_perms", JsonConvert.DeserializeObject("{\"send\":[\"*\"]}") }
+                };
 
-            var tokenDescriptor = new SecurityTokenDescriptor
-            {
-                Subject = new ClaimsIdentity(new Claim[]
-                       {
-                            new Claim("exp", (GetEpoch() + expirySeconds).ToString()),
-                            new Claim("user_id", userId),
-                            new Claim("role","external"),
-                            new Claim("channel_Id", channelId),
-                            new Claim("pubsub_perms","{\"send\":[  \"*\" ]}"),
-                       }),
-                SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(Convert.FromBase64String(secret)), SecurityAlgorithms.HmacSha256Signature)
-            };
-            JwtSecurityTokenHandler handler = new JwtSecurityTokenHandler();
-            var plainToken = handler.CreateToken(tokenDescriptor);
+            IJwtAlgorithm algorithm = new HMACSHA256Algorithm();
+            IJsonSerializer serializer = new JsonNetSerializer();
+            IBase64UrlEncoder urlEncoder = new JwtBase64UrlEncoder();
+            IJwtEncoder encoder = new JwtEncoder(algorithm, serializer, urlEncoder);
 
-            return handler.WriteToken(plainToken);
+            var token = encoder.Encode(payload, secret);
+            return token;
         }
         
         private int GetEpoch()

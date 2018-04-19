@@ -20,6 +20,7 @@
     <FileVersion>2.1.0.0</FileVersion>
   </PropertyGroup>
   <ItemGroup>
+    <PackageReference Include="JWT" Version="4.0.0" />
     <PackageReference Include="Microsoft.IdentityModel.Tokens" Version="5.2.1" />
     <PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="5.2.1" />
     <PackageReference Include="Newtonsoft.Json" Version="11.0.1" />
