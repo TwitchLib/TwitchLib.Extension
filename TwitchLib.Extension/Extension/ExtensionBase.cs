@@ -14,6 +14,7 @@ using TwitchLib.Extension.Models;
 using JWT;
 using JWT.Serializers;
 using JWT.Algorithms;
+using System.Text;
 
 namespace TwitchLib.Extension
 {
@@ -251,8 +252,7 @@ namespace TwitchLib.Extension
             request.Method = method;
             request.ContentType = "application/json";
             var token = jwt ?? Sign(secret, userId, 10);
-                request.Headers["Authorization"] = $"Bearer {token}";
-
+            request.Headers["Authorization"] = $"Bearer {token}";
 
             if (payload != null)
                 using (var writer = new StreamWriter(await request.GetRequestStreamAsync()))
@@ -267,30 +267,30 @@ namespace TwitchLib.Extension
                 }
             }
             catch (WebException ex) {
-                //var yep = "";
-                //try
-                //{
-                //     IJsonSerializer serializer = new JsonNetSerializer();
-                //    IDateTimeProvider provider = new UtcDateTimeProvider();
-                //    IJwtValidator validator = new JwtValidator(serializer, provider);
-                //     IBase64UrlEncoder urlEncoder = new JwtBase64UrlEncoder();
-                //    IJwtDecoder decoder = new JwtDecoder(serializer, validator, urlEncoder);
-                //    var json = decoder.Decode(token, secret, verify: true);
-                //    yep = json;
-                //}
-                //catch (TokenExpiredException)
-                //{
-                //    yep="Token has expired";
-                //}
-                //catch (SignatureVerificationException)
-                //{
-                //    yep = "Token has invalid signature";
-                //}
-                //var result = "";
-                //foreach(var key in ex.Response.Headers.AllKeys)
-                //{
-                //    result += $"{key} : {ex.Response.Headers[key]}\r\n";
-                //}
+                var yep = "";
+                try
+                {
+                    IJsonSerializer serializer = new JsonNetSerializer();
+                    IDateTimeProvider provider = new UtcDateTimeProvider();
+                    IJwtValidator validator = new JwtValidator(serializer, provider);
+                    IBase64UrlEncoder urlEncoder = new JwtBase64UrlEncoder();
+                    IJwtDecoder decoder = new JwtDecoder(serializer, validator, urlEncoder);
+                    var json = decoder.Decode(token, secret, verify: false);
+                    yep = json;
+                }
+                catch (TokenExpiredException)
+                {
+                    yep = "Token has expired";
+                }
+                catch (SignatureVerificationException)
+                {
+                    yep = "Token has invalid signature";
+                }
+                var result = "";
+                foreach (var key in ex.Response.Headers.AllKeys)
+                {
+                    result += $"{key} : {ex.Response.Headers[key]}\r\n";
+                }
 
                 HandleWebException(ex);
 
@@ -400,19 +400,25 @@ namespace TwitchLib.Extension
             IBase64UrlEncoder urlEncoder = new JwtBase64UrlEncoder();
             IJwtEncoder encoder = new JwtEncoder(algorithm, serializer, urlEncoder);
 
-            var token = encoder.Encode(payload, secret);
+            var token = encoder.Encode(payload, Convert.FromBase64String(secret));
             return token;
         }
 
+        class perms
+        {
+            public string[] send;
+        }
         private string Sign(string secret, string userId, int expirySeconds, string channelId)
         {
+            var perms = new perms { send = new string[] { "*" } };
+
             var payload = new Dictionary<string, object>
                 {
                     { "exp", (GetEpoch() + expirySeconds) },
                     { "user_id", userId },
                     { "role", "external" },
                     { "channel_id", channelId },
-                    { "pubsub_perms", JsonConvert.DeserializeObject("{\"send\":[\"*\"]}") }
+                    { "pubsub_perms", perms }
                 };
 
             IJwtAlgorithm algorithm = new HMACSHA256Algorithm();
@@ -420,8 +426,9 @@ namespace TwitchLib.Extension
             IBase64UrlEncoder urlEncoder = new JwtBase64UrlEncoder();
             IJwtEncoder encoder = new JwtEncoder(algorithm, serializer, urlEncoder);
 
-            var token = encoder.Encode(payload, secret);
+            var token = encoder.Encode(payload, Convert.FromBase64String(secret));
             return token;
+            
         }
         
         private int GetEpoch()
