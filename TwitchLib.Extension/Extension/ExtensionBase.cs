@@ -266,35 +266,7 @@ namespace TwitchLib.Extension
                     return new KeyValuePair<int, string>((int)response.StatusCode, data);
                 }
             }
-            catch (WebException ex) {
-                var yep = "";
-                try
-                {
-                    IJsonSerializer serializer = new JsonNetSerializer();
-                    IDateTimeProvider provider = new UtcDateTimeProvider();
-                    IJwtValidator validator = new JwtValidator(serializer, provider);
-                    IBase64UrlEncoder urlEncoder = new JwtBase64UrlEncoder();
-                    IJwtDecoder decoder = new JwtDecoder(serializer, validator, urlEncoder);
-                    var json = decoder.Decode(token, secret, verify: false);
-                    yep = json;
-                }
-                catch (TokenExpiredException)
-                {
-                    yep = "Token has expired";
-                }
-                catch (SignatureVerificationException)
-                {
-                    yep = "Token has invalid signature";
-                }
-                var result = "";
-                foreach (var key in ex.Response.Headers.AllKeys)
-                {
-                    result += $"{key} : {ex.Response.Headers[key]}\r\n";
-                }
-
-                HandleWebException(ex);
-
-            }
+            catch (WebException ex) { HandleWebException(ex); }
 
             return new KeyValuePair<int, string>(0, null);
         }
