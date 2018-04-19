@@ -11,6 +11,10 @@ using System.Security.Claims;
 using TwitchLib.Extension.Exceptions;
 using System.Linq;
 using TwitchLib.Extension.Models;
+using JWT;
+using JWT.Serializers;
+using JWT.Algorithms;
+using System.Text;
 
 namespace TwitchLib.Extension
 {
@@ -244,12 +248,11 @@ namespace TwitchLib.Extension
         {
             var request = WebRequest.CreateHttp(string.Format(_extensionUrl, url));
 
-            request.Headers["Client-ID"] = clientId;
+            request.Headers["Client-Id"] = clientId;
             request.Method = method;
             request.ContentType = "application/json";
             var token = jwt ?? Sign(secret, userId, 10);
-                request.Headers["Authorization"] = $"Bearer {token}";
-
+            request.Headers["Authorization"] = $"Bearer {token}";
 
             if (payload != null)
                 using (var writer = new StreamWriter(await request.GetRequestStreamAsync()))
@@ -357,42 +360,47 @@ namespace TwitchLib.Extension
 
         private string Sign(string secret, string userId, int expirySeconds)
         {
+            var payload = new Dictionary<string, object>
+                {
+                    { "exp", (GetEpoch() + expirySeconds) },
+                    { "user_id", userId },
+                    { "role", "external" }
+                };
 
-            var tokenDescriptor = new SecurityTokenDescriptor
-            {
-                Subject = new ClaimsIdentity(new Claim[]
-                       {
-                            new Claim("exp", (GetEpoch() + expirySeconds).ToString()),
-                            new Claim("user_id", userId),
-                            new Claim("role","external")
-                       }),
-                SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(Convert.FromBase64String(secret)), SecurityAlgorithms.HmacSha256Signature)
-            };
-            JwtSecurityTokenHandler handler = new JwtSecurityTokenHandler();
-            var plainToken = handler.CreateToken(tokenDescriptor);
+            IJwtAlgorithm algorithm = new HMACSHA256Algorithm();
+            IJsonSerializer serializer = new JsonNetSerializer();
+            IBase64UrlEncoder urlEncoder = new JwtBase64UrlEncoder();
+            IJwtEncoder encoder = new JwtEncoder(algorithm, serializer, urlEncoder);
 
-            return handler.WriteToken(plainToken);
+            var token = encoder.Encode(payload, Convert.FromBase64String(secret));
+            return token;
         }
 
+        class perms
+        {
+            public string[] send;
+        }
         private string Sign(string secret, string userId, int expirySeconds, string channelId)
         {
+            var perms = new perms { send = new string[] { "*" } };
 
-            var tokenDescriptor = new SecurityTokenDescriptor
-            {
-                Subject = new ClaimsIdentity(new Claim[]
-                       {
-                            new Claim("exp", (GetEpoch() + expirySeconds).ToString()),
-                            new Claim("user_id", userId),
-                            new Claim("role","external"),
-                            new Claim("channel_Id", channelId),
-                            new Claim("pubsub_perms","{\"send\":[  \"*\" ]}"),
-                       }),
-                SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(Convert.FromBase64String(secret)), SecurityAlgorithms.HmacSha256Signature)
-            };
-            JwtSecurityTokenHandler handler = new JwtSecurityTokenHandler();
-            var plainToken = handler.CreateToken(tokenDescriptor);
+            var payload = new Dictionary<string, object>
+                {
+                    { "exp", (GetEpoch() + expirySeconds) },
+                    { "user_id", userId },
+                    { "role", "external" },
+                    { "channel_id", channelId },
+                    { "pubsub_perms", perms }
+                };
 
-            return handler.WriteToken(plainToken);
+            IJwtAlgorithm algorithm = new HMACSHA256Algorithm();
+            IJsonSerializer serializer = new JsonNetSerializer();
+            IBase64UrlEncoder urlEncoder = new JwtBase64UrlEncoder();
+            IJwtEncoder encoder = new JwtEncoder(algorithm, serializer, urlEncoder);
+
+            var token = encoder.Encode(payload, Convert.FromBase64String(secret));
+            return token;
+            
         }
         
         private int GetEpoch()
