@@ -6,6 +6,5 @@
         public string OwnerId { get; set; }
         public string VersionNumber { get; set; }
         public string StartingSecret { get; set; }
-
     }
 }

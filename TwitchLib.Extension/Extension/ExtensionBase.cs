@@ -1,6 +1,4 @@
-﻿using Newtonsoft.Json;
-using Newtonsoft.Json.Serialization;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Net;
@@ -14,15 +12,12 @@ using TwitchLib.Extension.Models;
 using JWT;
 using JWT.Serializers;
 using JWT.Algorithms;
-using System.Text;
 
 namespace TwitchLib.Extension
 {
     public abstract class ExtensionBase
     {
         private const string _extensionUrl = "https://api.twitch.tv/extensions/{0}";
-
-        private readonly TwitchLibJsonSerializer _jsonSerializer;
         private readonly ExtensionConfiguration _config;
         protected IEnumerable<Secret> Secrets { get; set; }
 
@@ -32,7 +27,6 @@ namespace TwitchLib.Extension
         {
             _config = config;
             Secrets = new List<Secret> { new Secret(config.StartingSecret, DateTime.Now, DateTime.Now.AddYears(100)) };
-            _jsonSerializer = new TwitchLibJsonSerializer();
         }
         
 
@@ -159,8 +153,7 @@ namespace TwitchLib.Extension
                 message,
                 jwt);
         }
-
-
+        
         protected async Task<Models.ExtensionSecrets> CreateExtensionSecretAsync(string extensionSecret, string extensionId, string extensionOwnerId, int activationDelaySeconds = 300)
         {
             if (string.IsNullOrWhiteSpace(extensionSecret)) throw new BadParameterException("The extension secret is not valid. It is not allowed to be null, empty or filled with whitespaces.");
@@ -169,7 +162,8 @@ namespace TwitchLib.Extension
             if (activationDelaySeconds < 300) throw new BadParameterException("The activation delay in seconds is not allowed to be less than 300");
 
             var url = $"{extensionId}/auth/secret";
-            return JsonConvert.DeserializeObject<Models.ExtensionSecrets>((await RequestAsync(extensionSecret, url, "POST", extensionOwnerId, extensionId, JsonConvert.SerializeObject(new Models.CreateSecretRequest { Activation_Delay_Secs = activationDelaySeconds })).ConfigureAwait(false)).Value, TwitchLibJsonDeserializer);
+            var request = new CreateSecretRequest { Activation_Delay_Secs = activationDelaySeconds };
+            return ExtensionSecrets.FromJson((await RequestAsync(extensionSecret, url, "POST", extensionOwnerId, extensionId, request.ToJson()).ConfigureAwait(false)).Value);
         }
 
         protected async Task<Models.ExtensionSecrets> GetExtensionSecretAsync(string extensionSecret, string extensionId, string extensionOwnerId)
@@ -179,7 +173,7 @@ namespace TwitchLib.Extension
             if (string.IsNullOrWhiteSpace(extensionOwnerId)) throw new BadParameterException("The extension owner id is not valid. It is not allowed to be null, empty or filled with whitespaces.");
             
             var url = $"{extensionId}/auth/secret";
-            return JsonConvert.DeserializeObject<Models.ExtensionSecrets>((await RequestAsync(extensionSecret, url, "GET", extensionOwnerId, extensionId).ConfigureAwait(false)).Value, TwitchLibJsonDeserializer);
+            return ExtensionSecrets.FromJson((await RequestAsync(extensionSecret, url, "GET", extensionOwnerId, extensionId).ConfigureAwait(false)).Value);
         }
 
         protected async Task<bool> RevokeExtensionSecretAsync(string extensionSecret, string extensionId, string extensionOwnerId)
@@ -204,7 +198,7 @@ namespace TwitchLib.Extension
             {
                 url += $"?cursor={cursor}";
             }
-            return JsonConvert.DeserializeObject<Models.LiveChannels>((await RequestAsync(extensionSecret, url, "GET", extensionOwnerId, extensionId).ConfigureAwait(false)).Value, TwitchLibJsonDeserializer);
+            return LiveChannels.FromJson((await RequestAsync(extensionSecret, url, "GET", extensionOwnerId, extensionId).ConfigureAwait(false)).Value);
         }
 
         protected async Task<bool> SetExtensionRequiredConfigurationAsync(string extensionSecret, string extensionId, string extensionVersion, string extensionOwnerId, string channelId, string requiredConfiguration)
@@ -217,7 +211,9 @@ namespace TwitchLib.Extension
             if (string.IsNullOrEmpty(requiredConfiguration)) throw new BadParameterException("The required configuration is not valid. It is not allowed to be null or empty.");
 
             var url = $"{extensionId}/{extensionVersion}/required_configuration?channel_id={channelId}";
-            return (await RequestAsync(extensionSecret, url, "PUT", extensionOwnerId, extensionId, JsonConvert.SerializeObject(new Models.SetExtensionRequiredConfigurationRequest { Required_Configuration = requiredConfiguration })).ConfigureAwait(false)).Key == 204;
+            var request = new SetExtensionRequiredConfigurationRequest { Required_Configuration = requiredConfiguration };
+
+            return (await RequestAsync(extensionSecret, url, "PUT", extensionOwnerId, extensionId, request.ToJson()).ConfigureAwait(false)).Key == 204;
         }
 
         protected async Task<bool> SetExtensionBroadcasterOAuthReceiptAsync(string extensionSecret, string extensionId, string extensionVersion, string extensionOwnerId, string channelId, bool permissionsReceived)
@@ -229,7 +225,8 @@ namespace TwitchLib.Extension
             if (string.IsNullOrWhiteSpace(channelId)) throw new BadParameterException("The channel id is not valid. It is not allowed to be null, empty or filled with whitespaces.");
 
             var url = $"{extensionId}/{extensionVersion}/oauth_receipt?channel_id={channelId}";
-            return (await RequestAsync(extensionSecret, url, "PUT", extensionOwnerId, extensionId, JsonConvert.SerializeObject(new Models.SetExtensionBroadcasterOAuthReceiptRequest { Permissions_Received = permissionsReceived })).ConfigureAwait(false)).Key == 204;
+            var request = new SetExtensionBroadcasterOAuthReceiptRequest { Permissions_Received = permissionsReceived };
+            return (await RequestAsync(extensionSecret, url, "PUT", extensionOwnerId, extensionId, request.ToJson()).ConfigureAwait(false)).Key == 204;
         }
 
         protected async Task<bool> SendExtensionPubSubMessageAsync(string extensionSecret, string extensionId, string extensionOwnerId, string channelId, Models.ExtensionPubSubRequest message, string jwt =null)
@@ -241,7 +238,8 @@ namespace TwitchLib.Extension
 
             var url = $"message/{channelId}";
             if (string.IsNullOrEmpty(jwt)) jwt = Sign(extensionSecret, extensionOwnerId, 10, channelId);
-            return (await RequestAsync(extensionSecret, url, "POST", extensionOwnerId, extensionId, JsonConvert.SerializeObject(message), jwt).ConfigureAwait(false)).Key == 204;
+            
+            return (await RequestAsync(extensionSecret, url, "POST", extensionOwnerId, extensionId, message.ToJson(), jwt).ConfigureAwait(false)).Key == 204;
         }
 
         private async Task<KeyValuePair<int, string>> RequestAsync(string secret, string url, string method, string userId, string clientId, object payload=null, string jwt = null)
@@ -290,32 +288,6 @@ namespace TwitchLib.Extension
             }
         }
 
-        #region SerialiazationSettings
-        internal JsonSerializerSettings TwitchLibJsonDeserializer = new JsonSerializerSettings { NullValueHandling = NullValueHandling.Ignore, MissingMemberHandling = MissingMemberHandling.Ignore };
-
-        internal class TwitchLibJsonSerializer
-        {
-            private readonly JsonSerializerSettings Settings = new JsonSerializerSettings
-            {
-                ContractResolver = new LowercaseContractResolver(),
-                NullValueHandling = NullValueHandling.Ignore
-            };
-
-            public string SerializeObject(object o)
-            {
-                return JsonConvert.SerializeObject(o, Formatting.Indented, Settings);
-            }
-
-            public class LowercaseContractResolver : DefaultContractResolver
-            {
-                protected override string ResolvePropertyName(string propertyName)
-                {
-                    return propertyName.ToLower();
-                }
-            }
-
-        }
-        #endregion
 
         #region JWTSignAndVerify
         public ClaimsPrincipal Verify(string jwt, out SecurityToken validTokenOverlay)
@@ -400,7 +372,6 @@ namespace TwitchLib.Extension
 
             var token = encoder.Encode(payload, Convert.FromBase64String(secret));
             return token;
-            
         }
         
         private int GetEpoch()

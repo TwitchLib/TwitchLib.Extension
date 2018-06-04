@@ -6,5 +6,4 @@ namespace TwitchLib.Extension
     {
         public IEnumerable<ExtensionConfiguration> Extensions { get; set; }
     }
-   
 }

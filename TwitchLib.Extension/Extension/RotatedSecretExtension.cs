@@ -1,30 +1,43 @@
-﻿using System;
-using System.Linq;
+﻿using System.Linq;
+using System.Threading.Tasks;
+using TwitchLib.Extension.Models;
 
 namespace TwitchLib.Extension
 {
     public class RotatedSecretExtension : ExtensionBase
     {
-        private readonly System.Timers.Timer _timer;
+        private readonly int _interval;
 
         public RotatedSecretExtension(ExtensionConfiguration config, int rotationIntervalMinutes = 720) : base(config)
         {
-            var secrets = GetExtensionSecretAsync().Result;
-            if (secrets != null)
-            {
-                Secrets = secrets.Secrets.ToList();
-            }
+            _interval = rotationIntervalMinutes * 1000 * 60;
+            var secrets = GetExtensionSecretAsync().GetAwaiter().GetResult();
 
-            _timer = new System.Timers.Timer(TimeSpan.FromMinutes(rotationIntervalMinutes).TotalMilliseconds);
-            _timer.Elapsed += _timer_Elapsed;
-            _timer.AutoReset = true;
-            _timer.Start();
+            if (secrets != null)
+                Secrets = secrets.Secrets.ToList();
+
+            Task.Run(async () =>
+            {
+                while (true)
+                {
+                    await Task.Delay(_interval);
+
+                    //Until saving of Extension Config is implemented, just get current secret so it can't be lost!
+                    //CreateAndSaveNewSecret(await CreateExtensionSecretAsync());
+
+                    CreateAndSaveNewSecret(await GetExtensionSecretAsync());
+                }
+            });
         }
-        
-        private async void _timer_Elapsed(object sender, System.Timers.ElapsedEventArgs e)
+
+        private void CreateAndSaveNewSecret(ExtensionSecrets extensionSecrets)
         {
-            var secrets = await CreateExtensionSecretAsync().ConfigureAwait(false);
-            Secrets = secrets.Secrets.ToList();
+            if (extensionSecrets == null) return;
+
+            // Todo: Save Secret Here - Where?
+            // EF allowing end-developer specified providers?
+
+            Secrets = extensionSecrets.Secrets.ToList();
         }
     }
 }

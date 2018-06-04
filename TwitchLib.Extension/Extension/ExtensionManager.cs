@@ -16,7 +16,6 @@ namespace TwitchLib.Extension
             ClaimsPrincipal user = null;
             validTokenOverlay = null;
 
-
             foreach (var extension in _extensions.Extension.Values)
             {
                 user = extension.Verify(jwt, out validTokenOverlay);
@@ -25,6 +24,7 @@ namespace TwitchLib.Extension
                     break;
                 }
             }
+
             return user;
         }
 
