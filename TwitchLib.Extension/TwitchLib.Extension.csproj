@@ -1,6 +1,6 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFrameworks>netstandard2.0;net46</TargetFrameworks>
+    <TargetFrameworks>netcoreapp2.1;net46</TargetFrameworks>
     <PackageId>TwitchLib.Extension</PackageId>
     <Version>1.2.0</Version>
     <Description>Extension component of TwitchLib. This component allows you to access Twitch's Extension Api system</Description>
@@ -14,21 +14,21 @@
     <PackageReleaseNotes>Version 1 of the Extension library</PackageReleaseNotes>
     <RepositoryUrl>https://github.com/TwitchLib/TwitchLib.Extension</RepositoryUrl>
     <RepositoryType>Git</RepositoryType>
-    <PackageTags>twitch extension api c# csharp nbet standard 2.0</PackageTags>
+    <PackageTags>twitch extension api c# csharp net core 2.1</PackageTags>
     <NeutralLanguage>en-US</NeutralLanguage>
     <AssemblyVersion>2.2.0.0</AssemblyVersion>
     <FileVersion>2.2.0.0</FileVersion>
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="JWT" Version="4.0.0" />
-    <PackageReference Include="Microsoft.IdentityModel.Tokens" Version="5.2.1" />
-    <PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="5.2.1" />
-    <PackageReference Include="Newtonsoft.Json" Version="11.0.1" />
+    <PackageReference Include="Microsoft.IdentityModel.Tokens" Version="5.2.2" />
+    <PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="5.2.2" />
+    <PackageReference Include="Newtonsoft.Json" Version="11.0.2" />
   </ItemGroup>
   <PropertyGroup Condition=" '$(TargetFramework)' == 'net46'">
     <DefineConstants>NET46</DefineConstants>
   </PropertyGroup>
-  <PropertyGroup Condition=" '$(TargetFramework)' == 'netstandard2.0'">
+  <PropertyGroup Condition=" '$(TargetFramework)' == 'netcoreapp2.1'">
     <DefineConstants>NETSTANDARD</DefineConstants>
   </PropertyGroup>
 

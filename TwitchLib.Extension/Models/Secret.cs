@@ -6,17 +6,15 @@ namespace TwitchLib.Extension.Models
     public class Secret
     {
         public Secret()
-        {
-
-        }
+        { }
 
         public Secret(string content, DateTime active, DateTime expires)
         {
             Content = content;
             Active = active;
             Expires = expires;
-
         }
+
         [JsonProperty(PropertyName = "active")]
         public DateTime Active { get; protected set; }
         [JsonProperty(PropertyName = "content")]

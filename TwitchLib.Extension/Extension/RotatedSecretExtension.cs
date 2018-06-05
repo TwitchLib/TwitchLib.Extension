@@ -1,30 +1,48 @@
 ﻿using System;
 using System.Linq;
+using System.Threading.Tasks;
+using TwitchLib.Extension.Events;
 
 namespace TwitchLib.Extension
 {
     public class RotatedSecretExtension : ExtensionBase
     {
-        private readonly System.Timers.Timer _timer;
+        private readonly int _interval;
+        public event EventHandler<SecretRotatedEventArgs> SecretRotated;
 
         public RotatedSecretExtension(ExtensionConfiguration config, int rotationIntervalMinutes = 720) : base(config)
         {
-            var secrets = GetExtensionSecretAsync().Result;
+            _interval = rotationIntervalMinutes * 1000 * 60;
+            var secrets = GetExtensionSecretAsync().GetAwaiter().GetResult();
             if (secrets != null)
-            {
                 Secrets = secrets.Secrets.ToList();
-            }
 
-            _timer = new System.Timers.Timer(TimeSpan.FromMinutes(rotationIntervalMinutes).TotalMilliseconds);
-            _timer.Elapsed += _timer_Elapsed;
-            _timer.AutoReset = true;
-            _timer.Start();
+            Task.Run(async () =>
+            {
+                while (true)
+                {
+                    await Task.Delay(_interval);
+
+                    if (SecretRotated != null)
+                    {
+                        secrets = await CreateExtensionSecretAsync();
+                        if (secrets == null) return;
+
+                        Secrets = secrets.Secrets.ToList();
+                        var currentSecret = Secrets.ToList().OrderByDescending(x => x.Expires).First();
+                        OnSecretRotated(new SecretRotatedEventArgs
+                        {
+                            NewSecret = currentSecret.Content,
+                            Expires = currentSecret.Expires
+                        });
+                    }
+                }
+            });
         }
-        
-        private async void _timer_Elapsed(object sender, System.Timers.ElapsedEventArgs e)
+
+        protected virtual void OnSecretRotated(SecretRotatedEventArgs e)
         {
-            var secrets = await CreateExtensionSecretAsync().ConfigureAwait(false);
-            Secrets = secrets.Secrets.ToList();
+            SecretRotated?.Invoke(this, e);
         }
     }
 }
