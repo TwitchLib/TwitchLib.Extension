@@ -2,7 +2,7 @@
   <PropertyGroup>
     <TargetFramework>netcoreapp2.1</TargetFramework>
     <PackageId>TwitchLib.Extension.Core</PackageId>
-    <Version>1.2.0</Version>
+    <Version>1.3.0</Version>
     <Description>Extension component of TwitchLib. This component expands the base Extension Library to include a dot net standard (core) Authentication Middleware and Extension Manager</Description>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
     <Authors>luckyNoS7evin</Authors>
