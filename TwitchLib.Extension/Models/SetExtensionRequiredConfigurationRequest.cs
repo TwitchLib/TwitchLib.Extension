@@ -5,6 +5,10 @@ namespace TwitchLib.Extension.Models
     public class SetExtensionRequiredConfigurationRequest
     {
         [JsonProperty(PropertyName = "required_configuration")]
-        public string Required_Configuration { get; internal set; }
+        public string RequiredConfiguration { get; internal set; }
+        [JsonProperty(PropertyName = "extension_id")]
+        public string ExtensionId { get; internal set; }
+        [JsonProperty(PropertyName = "extension_version")]
+        public string ExtensionVersion { get; internal set; }
     }
 }

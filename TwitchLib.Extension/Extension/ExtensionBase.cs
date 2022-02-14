@@ -1,23 +1,23 @@
-﻿using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Net;
-using System.Threading.Tasks;
-using System.IdentityModel.Tokens.Jwt;
-using Microsoft.IdentityModel.Tokens;
-using System.Security.Claims;
-using TwitchLib.Extension.Exceptions;
-using System.Linq;
-using TwitchLib.Extension.Models;
-using JWT;
-using JWT.Serializers;
+﻿using JWT;
 using JWT.Algorithms;
+using JWT.Serializers;
+using Microsoft.IdentityModel.Tokens;
+using System;
+using System.Collections.Generic;
+using System.IdentityModel.Tokens.Jwt;
+using System.IO;
+using System.Linq;
+using System.Net;
+using System.Security.Claims;
+using System.Threading.Tasks;
+using TwitchLib.Extension.Exceptions;
+using TwitchLib.Extension.Models;
 
 namespace TwitchLib.Extension
 {
     public abstract class ExtensionBase
     {
-        private const string _extensionUrl = "https://api.twitch.tv/extensions/{0}";
+        private const string _extensionUrl = "https://api.twitch.tv/helix/extensions/{0}";
         private readonly ExtensionConfiguration _config;
         protected IEnumerable<Secret> Secrets { get; set; }
 
@@ -29,7 +29,6 @@ namespace TwitchLib.Extension
             Secrets = new List<Secret> { new Secret(config.StartingSecret, DateTime.Now, DateTime.Now.AddYears(100)) };
         }
         
-
         /// <summary>
         /// Creates a new secret for a specified extension. Also rotates any current secrets out of service, with enough 
         /// time for extension clients to gracefully switch over to the new secret. The delay period, 
@@ -39,29 +38,18 @@ namespace TwitchLib.Extension
         /// Use this function only when you are ready to install the new secret it returns.
         /// </summary>
         /// <param name="activationDelaySeconds">How long Twitch should wait before using your new secret and rolling it out to users</param>
-        /// <returns>List of current extension secrets that are valid and haven't expired</returns>
-        public virtual async Task<ExtensionSecrets> CreateExtensionSecretAsync(int activationDelaySeconds = 300)
-        {
-            return await CreateExtensionSecretAsync(
-                CurrentSecret,
-                _config.Id,
-                _config.OwnerId,
-                activationDelaySeconds);
-        }
+        /// <returns>Data object containing all of current extension secrets that are valid and haven't expired</returns>
+        public virtual async Task<ExtensionSecretsData> CreateExtensionSecretAsync(int activationDelaySeconds = 300) => 
+            await CreateExtensionSecretAsync(CurrentSecret, _config.Id, _config.OwnerId, activationDelaySeconds);
 
         /// <summary>
         /// Retrieves a specified extension’s secret data: a version and an array of secret objects. 
         /// Each secret object returned contains a base64-encoded secret, a UTC timestamp when the secret becomes active, 
         /// and a timestamp when the secret expires.
         /// </summary>
-        /// <returns>List of current extension secrets that are valid and haven't expired</returns>
-        public virtual async Task<ExtensionSecrets> GetExtensionSecretAsync()
-        {
-            return await GetExtensionSecretAsync(
-                CurrentSecret,
-                _config.Id,
-                _config.OwnerId);
-        }
+        /// <returns>Data object containing all of current extension secrets that are valid and haven't expired</returns>
+        public virtual async Task<ExtensionSecretsData> GetExtensionSecretAsync() => 
+            await GetExtensionSecretAsync(CurrentSecret, _config.Id, _config.OwnerId);
 
         /// <summary>
         /// Deletes all secrets associated with a specified extension.
@@ -154,26 +142,26 @@ namespace TwitchLib.Extension
                 jwt);
         }
         
-        protected async Task<Models.ExtensionSecrets> CreateExtensionSecretAsync(string extensionSecret, string extensionId, string extensionOwnerId, int activationDelaySeconds = 300)
+        protected async Task<Models.ExtensionSecretsData> CreateExtensionSecretAsync(string extensionSecret, string extensionId, string extensionOwnerId, int activationDelaySeconds = 300)
         {
             if (string.IsNullOrWhiteSpace(extensionSecret)) throw new BadParameterException("The extension secret is not valid. It is not allowed to be null, empty or filled with whitespaces.");
             if (string.IsNullOrWhiteSpace(extensionId))  throw new BadParameterException("The extension id is not valid. It is not allowed to be null, empty or filled with whitespaces.");
             if (string.IsNullOrWhiteSpace(extensionOwnerId)) throw new BadParameterException("The extension owner id is not valid. It is not allowed to be null, empty or filled with whitespaces.");
             if (activationDelaySeconds < 300) throw new BadParameterException("The activation delay in seconds is not allowed to be less than 300");
 
-            var url = $"{extensionId}/auth/secret";
+            var url = $"jwt/secrets?extension_id={extensionId}";
             var request = new CreateSecretRequest { Activation_Delay_Secs = activationDelaySeconds };
-            return ExtensionSecrets.FromJson((await RequestAsync(extensionSecret, url, "POST", extensionOwnerId, extensionId, request.ToJson()).ConfigureAwait(false)).Value);
+            return ExtensionSecretsData.FromJson((await RequestAsync(extensionSecret, url, "POST", extensionOwnerId, extensionId, request.ToJson()).ConfigureAwait(false)).Value);
         }
 
-        protected async Task<Models.ExtensionSecrets> GetExtensionSecretAsync(string extensionSecret, string extensionId, string extensionOwnerId)
+        protected async Task<Models.ExtensionSecretsData> GetExtensionSecretAsync(string extensionSecret, string extensionId, string extensionOwnerId)
         {
             if (string.IsNullOrWhiteSpace(extensionSecret)) throw new BadParameterException("The extension secret is not valid. It is not allowed to be null, empty or filled with whitespaces.");
             if (string.IsNullOrWhiteSpace(extensionId)) throw new BadParameterException("The extension id is not valid. It is not allowed to be null, empty or filled with whitespaces.");
             if (string.IsNullOrWhiteSpace(extensionOwnerId)) throw new BadParameterException("The extension owner id is not valid. It is not allowed to be null, empty or filled with whitespaces.");
-            
-            var url = $"{extensionId}/auth/secret";
-            return ExtensionSecrets.FromJson((await RequestAsync(extensionSecret, url, "GET", extensionOwnerId, extensionId).ConfigureAwait(false)).Value);
+
+            var url = $"jwt/secrets?extension_id={extensionId}";
+            return ExtensionSecretsData.FromJson((await RequestAsync(extensionSecret, url, "GET", extensionOwnerId, extensionId).ConfigureAwait(false)).Value);
         }
 
         protected async Task<bool> RevokeExtensionSecretAsync(string extensionSecret, string extensionId, string extensionOwnerId)
@@ -182,7 +170,7 @@ namespace TwitchLib.Extension
             if (string.IsNullOrWhiteSpace(extensionId)) throw new BadParameterException("The extension id is not valid. It is not allowed to be null, empty or filled with whitespaces.");
             if (string.IsNullOrWhiteSpace(extensionOwnerId)) throw new BadParameterException("The extension owner id is not valid. It is not allowed to be null, empty or filled with whitespaces.");
 
-            var url = $"{extensionId}/auth/secret";
+            var url = $"jwt/secrets?extension_id={extensionId}";
             return (await RequestAsync(extensionSecret, url, "DELETE", extensionOwnerId, extensionId).ConfigureAwait(false)).Key == 204;
         }
 
@@ -191,13 +179,10 @@ namespace TwitchLib.Extension
             if (string.IsNullOrWhiteSpace(extensionSecret)) throw new BadParameterException("The extension secret is not valid. It is not allowed to be null, empty or filled with whitespaces.");
             if (string.IsNullOrWhiteSpace(extensionId)) throw new BadParameterException("The extension id is not valid. It is not allowed to be null, empty or filled with whitespaces.");
             if (string.IsNullOrWhiteSpace(extensionOwnerId)) throw new BadParameterException("The extension owner id is not valid. It is not allowed to be null, empty or filled with whitespaces.");
-            
-            var url = $"{extensionId}/live_activated_channels";
 
+            var url = $"/live?extension_id{extensionId}";
             if (!string.IsNullOrWhiteSpace(cursor))
-            {
-                url += $"?cursor={cursor}";
-            }
+                url += $"?after={cursor}";
             return LiveChannels.FromJson((await RequestAsync(extensionSecret, url, "GET", extensionOwnerId, extensionId).ConfigureAwait(false)).Value);
         }
 
@@ -210,8 +195,13 @@ namespace TwitchLib.Extension
             if (string.IsNullOrWhiteSpace(channelId)) throw new BadParameterException("The channel id is not valid. It is not allowed to be null, empty or filled with whitespaces.");
             if (string.IsNullOrEmpty(requiredConfiguration)) throw new BadParameterException("The required configuration is not valid. It is not allowed to be null or empty.");
 
-            var url = $"{extensionId}/{extensionVersion}/required_configuration?channel_id={channelId}";
-            var request = new SetExtensionRequiredConfigurationRequest { Required_Configuration = requiredConfiguration };
+            var url = $"required_configuration?broadcaster_id={channelId}";
+            var request = new SetExtensionRequiredConfigurationRequest 
+            { 
+                RequiredConfiguration = requiredConfiguration,
+                ExtensionId = extensionId,
+                ExtensionVersion = extensionVersion,
+            };
 
             return (await RequestAsync(extensionSecret, url, "PUT", extensionOwnerId, extensionId, request.ToJson()).ConfigureAwait(false)).Key == 204;
         }
@@ -236,10 +226,8 @@ namespace TwitchLib.Extension
             if (string.IsNullOrWhiteSpace(extensionOwnerId)) throw new BadParameterException("The extension owner id is not valid. It is not allowed to be null, empty or filled with whitespaces.");
             if (string.IsNullOrWhiteSpace(channelId)) throw new BadParameterException("The channel id is not valid. It is not allowed to be null, empty or filled with whitespaces.");
 
-            var url = $"message/{channelId}";
             if (string.IsNullOrEmpty(jwt)) jwt = Sign(extensionSecret, extensionOwnerId, 10, channelId);
-            
-            return (await RequestAsync(extensionSecret, url, "POST", extensionOwnerId, extensionId, message.ToJson(), jwt).ConfigureAwait(false)).Key == 204;
+            return (await RequestAsync(extensionSecret, "pubsub", "POST", extensionOwnerId, extensionId, message.ToJson(), jwt).ConfigureAwait(false)).Key == 204;
         }
 
         private async Task<KeyValuePair<int, string>> RequestAsync(string secret, string url, string method, string userId, string clientId, object payload=null, string jwt = null)

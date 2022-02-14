@@ -15,11 +15,11 @@ namespace TwitchLib.Extension.Models
             Expires = expires;
         }
 
-        [JsonProperty(PropertyName = "active")]
+        [JsonProperty(PropertyName = "active_at")]
         public DateTime Active { get; protected set; }
         [JsonProperty(PropertyName = "content")]
         public string Content { get; protected set; }
-        [JsonProperty(PropertyName = "expires")]
+        [JsonProperty(PropertyName = "expires_at")]
         public DateTime Expires { get; protected set; }
     }
 }
