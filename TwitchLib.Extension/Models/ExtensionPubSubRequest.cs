@@ -4,11 +4,13 @@ namespace TwitchLib.Extension.Models
 {
     public class ExtensionPubSubRequest
     {
-        [JsonProperty(PropertyName = "content_type")]
-        public string Content_Type { get;  set; }
         [JsonProperty(PropertyName = "message")]
         public object Message { get;  set; }
-        [JsonProperty(PropertyName = "targets")]
+        [JsonProperty(PropertyName = "target")]
         public string[] Targets { get;  set; }
+        [JsonProperty(PropertyName = "broadcaster_id")]
+        public string BroadcasterId { get; set; } = null;
+        [JsonProperty(PropertyName = "is_global_broadcast")]
+        public bool IsGlobalBroadcast => string.IsNullOrEmpty(this.BroadcasterId);
     }
 }

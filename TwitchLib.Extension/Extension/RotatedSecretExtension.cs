@@ -13,9 +13,9 @@ namespace TwitchLib.Extension
         public RotatedSecretExtension(ExtensionConfiguration config, int rotationIntervalMinutes = 720) : base(config)
         {
             _interval = rotationIntervalMinutes * 1000 * 60;
-            var secrets = GetExtensionSecretAsync().GetAwaiter().GetResult();
-            if (secrets != null)
-                Secrets = secrets.Secrets.ToList();
+            var secretsData = GetExtensionSecretAsync().GetAwaiter().GetResult();
+            if (secretsData != null)
+                Secrets = secretsData.Data.SelectMany(x => x.Secrets).ToList();
 
             Task.Run(async () =>
             {
@@ -25,10 +25,10 @@ namespace TwitchLib.Extension
 
                     if (SecretRotated != null)
                     {
-                        secrets = await CreateExtensionSecretAsync();
-                        if (secrets == null) return;
+                        secretsData = await CreateExtensionSecretAsync();
+                        if (secretsData == null) return;
 
-                        Secrets = secrets.Secrets.ToList();
+                        Secrets = secretsData.Data.SelectMany(x => x.Secrets).ToList();
                         var currentSecret = Secrets.ToList().OrderByDescending(x => x.Expires).First();
                         OnSecretRotated(new SecretRotatedEventArgs
                         {

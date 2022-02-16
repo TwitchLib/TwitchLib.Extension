@@ -10,8 +10,14 @@ namespace TwitchLib.Extension.Models
         public Secret[] Secrets { get; protected set; }
     }
 
-    public partial class ExtensionSecrets
+    public partial class ExtensionSecretsData
     {
-        public static ExtensionSecrets FromJson(string json) => JsonConvert.DeserializeObject<ExtensionSecrets>(json, TwitchLibJsonSerializer.Settings);
+        [JsonProperty(PropertyName = "data")]
+        public ExtensionSecrets[] Data { get; protected set; }
+    }
+
+    public partial class ExtensionSecretsData
+    {
+        public static ExtensionSecretsData FromJson(string json) => JsonConvert.DeserializeObject<ExtensionSecretsData>(json, TwitchLibJsonSerializer.Settings);
     }
 }

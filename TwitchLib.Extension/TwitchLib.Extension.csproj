@@ -5,12 +5,12 @@
     <Version>1.3.0</Version>
     <Description>Extension component of TwitchLib. This component allows you to access Twitch's Extension Api system</Description>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
-    <Authors>luckyNoS7evin</Authors>
+    <Authors>luckyNoS7evin,thetestgame</Authors>
     <Company>swiftyspiffy (cole)</Company>
     <PackageIconUrl>https://colejelinek.com/dev/twitchlib.png</PackageIconUrl>
     <PackageProjectUrl>https://github.com/TwitchLib/TwitchLib.Extension</PackageProjectUrl>
     <PackageLicenseUrl>https://opensource.org/licenses/MIT</PackageLicenseUrl>
-    <Copyright>Copyright 2017</Copyright>
+    <Copyright>Copyright 2022</Copyright>
     <PackageReleaseNotes>Version 1 of the Extension library</PackageReleaseNotes>
     <RepositoryUrl>https://github.com/TwitchLib/TwitchLib.Extension</RepositoryUrl>
     <RepositoryType>Git</RepositoryType>
@@ -18,6 +18,7 @@
     <NeutralLanguage>en-US</NeutralLanguage>
     <AssemblyVersion>2.2.0.0</AssemblyVersion>
     <FileVersion>2.2.0.0</FileVersion>
+    <BaseOutputPath>../build/TwitchLib.Extension</BaseOutputPath>
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="JWT" Version="4.0.0" />
